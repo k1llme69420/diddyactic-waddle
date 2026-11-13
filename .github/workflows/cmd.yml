@@ -1,0 +1,22 @@
+name: Run Windows CMD Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'echo test!'
+        required: true
+        default: 'dir'
+        type: string
+
+jobs:
+  run-command:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run CMD Command
+        shell: cmd
+        run: ${{ inputs.command }}
