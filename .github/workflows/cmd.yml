@@ -20,11 +20,10 @@ jobs:
       - name: Run Command and Send to Summary
         shell: powershell
         run: |
-          '${{ inputs.command }}' >> output.bat
-          cmd output.bat > output.tmp
+          cmd.exe /c ${{ inputs.command }} *>&1 | Out-File -FilePath output.tmp -Encoding utf8
           
-          type output.tmp
+          Get-Content output.tmp
 
-          echo ```cmd >> %GITHUB_STEP_SUMMARY%
-          type output.tmp >> %GITHUB_STEP_SUMMARY%
-          echo ``` >> %GITHUB_STEP_SUMMARY%
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```cmd'
+          Get-Content output.tmp | Add-Content -Path $env:GITHUB_STEP_SUMMARY
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
