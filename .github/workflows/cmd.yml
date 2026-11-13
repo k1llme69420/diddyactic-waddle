@@ -1,10 +1,10 @@
-name: Run Custom CMD Commands
+name: Command Prompt
 
 on:
   workflow_dispatch:
     inputs:
       commands:
-        description: 'Enter Command Prompt commands separated by semicolons (e.g., ver; dir; node -v)'
+        description: 'Enter Command Prompt commands (separated by semicolons)'
         required: true
         default: 'ver; dir'
         type: string
@@ -28,13 +28,17 @@ jobs:
               "### `$trimmed`" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
               '```bat' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
-              $output = & cmd.exe /c "$trimmed 2>&1"
-              $exitCode =$LASTEXITCODE
+              $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+              $pinfo.FileName = "cmd.exe"
+              $pinfo.Arguments = "/c $trimmed 2>&1"
+              $pinfo.RedirectStandardOutput = $true$pinfo.RedirectStandardError = $true$pinfo.UseShellExecute = $false$pinfo.CreateNoWindow = $true$p = New-Object System.Diagnostics.Process
+              $p.StartInfo =$pinfo
+              [void]$p.Start()
+              $output =$p.StandardOutput.ReadToEnd() + $p.StandardError.ReadToEnd()$p.WaitForExit()
+              $exitCode =$p.ExitCode
 
               if ($output) {
-                  foreach ($line in$output) {
-                      $line \vert{} Out-File -FilePath$env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-                  }
+                  $output.TrimEnd() \vert{} Out-File -FilePath$env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
               }
               
               '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
