@@ -20,9 +20,10 @@ jobs:
       - name: Run Command and Send to Summary
         shell: cmd
         run: |
-          ${{ inputs.command }} > output.tmp 2>&1
-          type output.tmp
+          call ${{ inputs.command }} > output.tmp 2>&1
           
+          type output.tmp
+
           echo ```cmd >> %GITHUB_STEP_SUMMARY%
           type output.tmp >> %GITHUB_STEP_SUMMARY%
           echo ``` >> %GITHUB_STEP_SUMMARY%
