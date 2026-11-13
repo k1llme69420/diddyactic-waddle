@@ -21,7 +21,7 @@ jobs:
         shell: powershell
         run: |
           '${{ inputs.command }}' >> output.bat
-          cmd /c output.bat > output.tmp
+          cmd output.bat > output.tmp
           
           type output.tmp
 
