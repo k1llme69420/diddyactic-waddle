@@ -20,21 +20,20 @@ jobs:
         shell: pwsh
         run: |
           $commands = "${{ inputs.commands }}" -split ";"
-          
           foreach ($cmd in $commands) {
               $trimmed = $cmd.Trim()
-              if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
-
-              "### `$trimmed`" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-              '```bat' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
+              if (-not $trimmed) { continue }
+              
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### $trimmed"
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```bat'
+              
               $output = cmd.exe /c$trimmed 2>&1
               if ($output) {
-                  $output \vert{} Out-File -FilePath$env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+                  Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value$output
               }
               
-              '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
+              
               if ($LASTEXITCODE -ne 0) {
                   exit $LASTEXITCODE
               }
