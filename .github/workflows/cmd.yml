@@ -27,6 +27,8 @@ jobs:
           }
           
           $commands = $rawCommands -split ";"
+
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
           
           foreach ($cmd in $commands)
           {
@@ -65,3 +67,5 @@ jobs:
           		exit $exitCode
           	}
           }
+
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
