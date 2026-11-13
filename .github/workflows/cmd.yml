@@ -34,13 +34,12 @@ jobs:
           
           	if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
           
-          	Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ('### `' + $trimmed + '`')
-          	Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```bat'
+          	Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "runner> now running: `"$trimmed`""
           
           	$output = cmd.exe /c "$trimmed 2>&1"
           	$exitCode = $LASTEXITCODE
           
-          	if ($null -ne$output) 
+          	if ($null -ne $output) 
           	{
           		foreach ($line in $output) 
           		{
@@ -51,16 +50,18 @@ jobs:
           	{
           		Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "(no output)"
           	}
-          
-          	Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
-          
+          	
+          	if ($exitCode -eq 0)
+          	{
+          		Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "runner> successfully finished execution"
+          	}
+          	else
+          	{
+          		Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "runner> failed with exit code $exitCode"
+          	}
+          	
           	if ($exitCode -ne 0) 
           	{
-          		Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "> ❌ **Status:** Failed with exit code $exitCode"
           		exit $exitCode
-          	}
-          	else 
-          	{
-          		Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "> ✅ **Status:** Success"
           	}
           }
