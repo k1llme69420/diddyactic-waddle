@@ -19,22 +19,41 @@ jobs:
       - name: Execute Commands
         shell: pwsh
         run: |
-          $commands = "${{ inputs.commands }}" -split ";"
+          $rawCommands = "${{ inputs.commands }}"
+          if ([string]::IsNullOrWhiteSpace($rawCommands)) {
+              Write-Error "No commands provided."
+              exit 1
+          }
+
+          $commands = $rawCommands -split ";"
+          
           foreach ($cmd in $commands) {
               $trimmed = $cmd.Trim()
-              if (-not $trimmed) { continue }
+              if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
               
-              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### $trimmed"
+              # Write command header to summary
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### `$trimmed`"
               Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```bat'
               
-              $output = cmd.exe /c$trimmed 2>&1
-              if ($output) {
-                  Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value$output
+              # Execute strictly through cmd.exe, capturing stdout and stderr
+              $output = cmd.exe /c "$trimmed 2>&1"
+              $exitCode =$LASTEXITCODE
+
+              if ($null -ne$output) {
+                  foreach ($line in$output) {
+                      Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value$line
+                  }
+              } else {
+                  Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "(no output)"
               }
               
               Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
               
-              if ($LASTEXITCODE -ne 0) {
-                  exit $LASTEXITCODE
+              # Handle exit status and stop execution if a command fails
+              if ($exitCode -ne 0) {
+                  Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "> ❌ **Status:** Failed with exit code `$exitCode`"
+                  exit $exitCode
+              } else {
+                  Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "> ✅ **Status:** Success"
               }
           }
