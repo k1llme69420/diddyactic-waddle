@@ -28,7 +28,7 @@ jobs:
           
           $commands = $rawCommands -split ";"
 
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```````n"
           
           foreach ($cmd in $commands)
           {
@@ -68,4 +68,4 @@ jobs:
           	}
           }
 
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "```````n"
