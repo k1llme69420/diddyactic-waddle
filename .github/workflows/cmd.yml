@@ -1,10 +1,10 @@
-name: Command Prompt
+name: Run Custom CMD Commands
 
 on:
   workflow_dispatch:
     inputs:
       commands:
-        description: 'Enter CMD commands separated by semicolons (e.g., ver; dir; node -v)'
+        description: 'Enter Command Prompt commands separated by semicolons (e.g., ver; dir; node -v)'
         required: true
         default: 'ver; dir'
         type: string
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Execute Commands
+      - name: Execute Commands via CMD and Write Summary
         shell: pwsh
         run: |
           $commands = "${{ inputs.commands }}" -split ";"
@@ -28,7 +28,7 @@ jobs:
               "### `$trimmed`" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
               '```bat' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
-              $output = cmd.exe /c "$trimmed 2>&1"
+              $output = & cmd.exe /c "$trimmed 2>&1"
               $exitCode =$LASTEXITCODE
 
               if ($output) {
