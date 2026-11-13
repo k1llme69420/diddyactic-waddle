@@ -1,12 +1,14 @@
-name: Command Prompt
+name: Run Custom Commands
 
 on:
   workflow_dispatch:
     inputs:
       commands:
-        description: 'Enter commands separated by &&'
+        description: 'Enter commands (one per line)'
         required: true
-        default: 'node -v && dir /b'
+        default: |
+          node -v
+          dir
         type: string
 
 jobs:
@@ -17,19 +19,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Execute Commands and Write Summary
-        shell: cmd
+        shell: pwsh
         run: |
-          setlocal enabledelayedexpansion
-          set "raw_cmds=${{ inputs.commands }}"
-          
-          for %%G in (!raw_cmds!) do (
-              set "cmd=%%G"
-              if not "!cmd!"=="" (
-                  echo ### `!cmd!`>> "%GITHUB_STEP_SUMMARY%"
-                  echo ```bat>> "%GITHUB_STEP_SUMMARY%"
-                  !cmd! >> "%GITHUB_STEP_SUMMARY%" 2>&1
-                  set "exit_code=!errorlevel!"
-                  echo ```>> "%GITHUB_STEP_SUMMARY%"
-                  if not "!exit_code!"=="0" exit /b !exit_code!
-              )
-          )
+          $commands = "${{ inputs.commands }}" -split "`r?`n"
+
+          foreach ($cmd in $commands) {
+              $trimmed = $cmd.Trim()
+              if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith("#")) { continue }
+
+              "### `$trimmed`" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+              '```powershell' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+              $output = Invoke-Expression$trimmed 2>&1 | Out-String
+              $exitCode =$LASTEXITCODE
+
+              if ($output) {
+                  $output.TrimEnd() \vert{} Out-File -FilePath$env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+              }
+              
+              '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+              if ($exitCode -ne 0) {
+                  exit $exitCode
+              }
+          }
