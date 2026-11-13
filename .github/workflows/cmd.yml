@@ -6,7 +6,7 @@ on:
       command:
         description: 'The Windows CMD command to run'
         required: true
-        default: 'echo example'
+        default: 'dir'
         type: string
 
 jobs:
@@ -17,6 +17,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Run CMD Command
+      - name: Run Command and Send to Summary
         shell: cmd
-        run: ${{ inputs.command }}
+        run: |
+          ${{ inputs.command }} > output.tmp 2>&1
+          type output.tmp
+          
+          echo ```cmd >> %GITHUB_STEP_SUMMARY%
+          type output.tmp >> %GITHUB_STEP_SUMMARY%
+          echo ``` >> %GITHUB_STEP_SUMMARY%
