@@ -28,7 +28,7 @@ jobs:
           
           $commands = $rawCommands -split ";"
           
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```bat'
           
           foreach ($cmd in $commands)
           {
