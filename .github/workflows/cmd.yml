@@ -1,22 +1,35 @@
-name: Run Custom Commands
+name: Command Prompt
 
 on:
   workflow_dispatch:
     inputs:
       commands:
-        description: 'Enter commands to run (one per line)'
+        description: 'Enter commands separated by &&'
         required: true
-        default: |
-          ver
-          whoami
+        default: 'node -v && dir /b'
         type: string
 
 jobs:
   run-batch:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: ./.github/actions/run-commands
-        with:
-          commands: ${{ inputs.commands }}
+      - name: Execute Commands and Write Summary
+        shell: cmd
+        run: |
+          setlocal enabledelayedexpansion
+          set "raw_cmds=${{ inputs.commands }}"
+          
+          for %%G in (!raw_cmds!) do (
+              set "cmd=%%G"
+              if not "!cmd!"=="" (
+                  echo ### `!cmd!`>> "%GITHUB_STEP_SUMMARY%"
+                  echo ```bat>> "%GITHUB_STEP_SUMMARY%"
+                  !cmd! >> "%GITHUB_STEP_SUMMARY%" 2>&1
+                  set "exit_code=!errorlevel!"
+                  echo ```>> "%GITHUB_STEP_SUMMARY%"
+                  if not "!exit_code!"=="0" exit /b !exit_code!
+              )
+          )
