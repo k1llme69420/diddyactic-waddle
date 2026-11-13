@@ -1,14 +1,12 @@
-name: Run Custom Commands
+name: Command Prompt
 
 on:
   workflow_dispatch:
     inputs:
       commands:
-        description: 'Enter commands (one per line)'
+        description: 'Enter CMD commands separated by semicolons (e.g., ver; dir; node -v)'
         required: true
-        default: |
-          node -v
-          dir
+        default: 'ver; dir'
         type: string
 
 jobs:
@@ -18,23 +16,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Execute Commands and Write Summary
+      - name: Execute Commands
         shell: pwsh
         run: |
-          $commands = "${{ inputs.commands }}" -split "`r?`n"
+          $commands = "${{ inputs.commands }}" -split ";"
 
           foreach ($cmd in $commands) {
               $trimmed = $cmd.Trim()
-              if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith("#")) { continue }
+              if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
 
               "### `$trimmed`" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-              '```powershell' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+              '```bat' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
-              $output = Invoke-Expression$trimmed 2>&1 | Out-String
+              $output = cmd.exe /c "$trimmed 2>&1"
               $exitCode =$LASTEXITCODE
 
               if ($output) {
-                  $output.TrimEnd() \vert{} Out-File -FilePath$env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+                  foreach ($line in$output) {
+                      $line \vert{} Out-File -FilePath$env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+                  }
               }
               
               '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
