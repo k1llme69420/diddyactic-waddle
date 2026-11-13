@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       command:
-        description: 'echo test!'
+        description: 'The Windows CMD command to run'
         required: true
-        default: 'dir'
+        default: 'echo example'
         type: string
 
 jobs:
