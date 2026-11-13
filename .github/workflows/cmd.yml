@@ -1,29 +1,22 @@
-name: Run Windows CMD Command
+name: Run Custom Commands
 
 on:
   workflow_dispatch:
     inputs:
-      command:
-        description: 'The Windows CMD command to run'
+      commands:
+        description: 'Enter commands to run (one per line)'
         required: true
-        default: 'dir'
+        default: |
+          ver
+          whoami
         type: string
 
 jobs:
-  run-command:
+  run-batch:
     runs-on: windows-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Run Command and Send to Summary
-        shell: powershell
-        run: |
-          cmd.exe /c "${{ inputs.command }}" | Out-File -FilePath output.tmp -Encoding utf8
-          
-          Get-Content output.tmp
-
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```cmd'
-          Get-Content output.tmp | Add-Content -Path $env:GITHUB_STEP_SUMMARY
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
+      - uses: ./.github/actions/run-commands
+        with:
+          commands: ${{ inputs.commands }}
