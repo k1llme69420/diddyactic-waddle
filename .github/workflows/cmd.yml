@@ -20,7 +20,7 @@ jobs:
       - name: Run Command and Send to Summary
         shell: powershell
         run: |
-          cmd.exe /c "${{ inputs.command }}" 2>&1 | Out-File -FilePath output.tmp -Encoding utf8
+          cmd.exe /c "${{ inputs.command }}" | Out-File -FilePath output.tmp -Encoding utf8
           
           Get-Content output.tmp
 
