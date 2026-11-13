@@ -69,5 +69,5 @@ jobs:
           	}
           }
 
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "`nrunner> finished running all commands!"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "runner> finished running all commands!"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
