@@ -29,6 +29,7 @@ jobs:
           $commands = $rawCommands -split ";"
           
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```bat'
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value 'runner> starting execution...'
           
           foreach ($cmd in $commands)
           {
@@ -62,12 +63,11 @@ jobs:
           		Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "`nrunner> failed with exit code $exitCode"
           	}
           	
-          	
-          
           	if ($exitCode -ne 0) 
           	{
           		exit $exitCode
           	}
           }
-          
+
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "`nrunner> finished running all commands!"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '```'
