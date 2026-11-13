@@ -18,9 +18,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Command and Send to Summary
-        shell: cmd
+        shell: powershell
         run: |
-          call ${{ inputs.command }} > output.tmp 2>&1
+          '${{ inputs.command }}' >> output.bat
+          cmd /c output.bat > output.tmp
           
           type output.tmp
 
